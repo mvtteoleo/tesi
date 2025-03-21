@@ -11,20 +11,20 @@ N = int(1e2)
 eps = 0.5
 
 # Define geometrical limits
-a = -1
-b = 1
-h = (b-a)/(N-1)
+x0 = -1
+xN = 1
+h = (xN-x0)/(N-1)
 
 # Set functions
-u    = lambda x: -x**2 - eps**2
-f_0  = lambda x: -2 + 0*x  # 0*x needed for the plot at least
+u    = lambda x: x**2 - eps**2
+f_0  = lambda x: 2 + 0*x  # 0*x needed for the plot at least
 # chi needs to be 0 in the fluid region and 1 elsewhere
 chi  = lambda x: 0.5 * (1 - np.sign(abs(x) - eps))
-f    = lambda x: f_0(x) * chi(x)
+f    = lambda x: f_0(x) * (1 - chi(x))
 u_ex = lambda x: u(x) * (1 - chi(x)) 
 u_p  = lambda x: 2*x
 
-x = np.linspace(a, b, N)
+x = np.linspace(x0, xN, N, endpoint=True)
 
 # Plot chi per check
 # plt.plot(x, chi(x))
@@ -33,7 +33,7 @@ x = np.linspace(a, b, N)
 # Get exact solution in a vector for ease of use
 exact = np.zeros(N)
 for i in range(N):
-    exact[i] = u_ex(i*h + a)
+    exact[i] = u_ex(i*h + x0)
 
 
 # %% Implement IBM
@@ -45,39 +45,47 @@ where B_ij = chi(x_i)* delta_ij /eta
 so A U = b
 """
 # Laplacian operator
-A_lap = -(np.diag(-2*np.ones(N)) + np.diag(np.ones(N-1), -1) + 
+A_lap = (np.diag(-2*np.ones(N)) + np.diag(np.ones(N-1), -1) + 
     np.diag(np.ones(N-1), 1) )/h**2
 b = np.zeros(N)
 
-eta = 1/h**4
+eta = 1/h**5
 B = np.zeros([N, N])
 chi_vec = chi(x)/eta
 B = np.diag( np.diag(chi_vec) )
-print(f"{B = }")
 
 # initialize b_ibm
 for i in range(N):
-    b[i] = f_0(i*h+a)
+    b[i] = f(i*h+x0)
 
 for i in range(2, N-2):
-    A_lap[i, i] -= B[i]
+    A_lap[i, i] += B[i]
 
-# impose BCs
+# IMPOSE BCS
 
-# Dirichlet periodic
-A_lap[0, -1] = -1/h**2
-# Neumann
-A_lap[-1, -1]= -1/h**2
+# Dirichlet BCs
+A_lap[0, :]  = np.zeros(N)
+A_lap[0, 0] = 1
+b[0] = u_ex(x0)
 
-print(A_lap)
+A_lap[-1, :]  = np.zeros(N)
+A_lap[-1, -1] = 1
+b[-1] = u_ex(xN)
+
+print(f"{A_lap = }")
 Uibm = np.zeros(N)
 Uibm = np.linalg.solve(A_lap, b)
-plt.plot(range(N), Uibm , label='IBM sol')
-plt.plot(range(N), exact, label='exact sol')
+print(f"{b = }")
+print(f"{Uibm = }")
+plt.plot(x, Uibm ,'-', label='IBM sol')
+plt.plot(x, exact, label='exact sol')
+plt.axvline(-eps, color='grey')
+plt.axvline(+eps, color='grey')
 plt.grid()
 plt.legend()
 plt.show()
 
+exit()
 """Works, the 1d problem without the IBM returns the correct approximation"""
 noIBM=1
 if noIBM==0:
@@ -87,7 +95,7 @@ if noIBM==0:
     U = b
     # initialize b
     for i in range(N):
-        b[i] = f_0(i*h+a)
+        b[i] = f_0(i*h+x0)
 
     A = (np.diag(-2*np.ones(N)) + np.diag(np.ones(N-1), -1) + np.diag(np.ones(N-1), 1) )/h**2
     # impose BCs
@@ -95,7 +103,7 @@ if noIBM==0:
     # Dirichlet
     A[ 0,  :] = np.zeros(N)
     A[ 0,  0] = 1  
-    b[0]      = u_ex(a)
+    b[0]      = u_ex(x0)
     A[-1,  :] = np.zeros(N)
     A[-1, -1] = 1
     b[-1]     = u_ex(1)
@@ -104,12 +112,12 @@ if noIBM==0:
     A[ 1,  :] = np.zeros(N)
     A[ 1,  0] = -1/h  
     A[ 1,  1] = +1/h
-    b[1]      =  u_p(a)
+    b[1]      =  u_p(x0)
 
     A[-2,  :] = np.zeros(N)
     A[-2, -2] = +1/h
     A[-2, -1] = -1/h
-    b[-2]     = u_p(b) 
+    b[-2]     = u_p(xN) 
 
     # Check impose U(0) = 0
     center0=1
