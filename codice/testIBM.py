@@ -7,7 +7,7 @@ f such that : u_ex = x^2-eps^2 & u_ex <0 u_ex=0
 BC: u(-1), u(1), u'(-1), u'(1) from u_ex
 """
 # Number of points (x_0 to x_{N-1})
-N = int(1e2)
+N = int(1e3)
 eps = 0.5
 
 # Define geometrical limits
@@ -17,12 +17,13 @@ h = (xN-x0)/(N-1)
 
 # Set functions
 u    = lambda x: x**2 - eps**2
+# f = u''
 f_0  = lambda x: 2 + 0*x  # 0*x needed for the plot at least
+u_p  = lambda x: 2*x
 # chi needs to be 0 in the fluid region and 1 elsewhere
 chi  = lambda x: 0.5 * (1 - np.sign(abs(x) - eps))
 f    = lambda x: f_0(x) * (1 - chi(x))
 u_ex = lambda x: u(x) * (1 - chi(x)) 
-u_p  = lambda x: 2*x
 
 x = np.linspace(x0, xN, N, endpoint=True)
 
