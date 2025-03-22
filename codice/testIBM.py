@@ -7,8 +7,13 @@ f such that : u_ex = x^2-eps^2 & u_ex <0 u_ex=0
 BC: u(-1), u(1), u'(-1), u'(1) from u_ex
 """
 # Number of points (x_0 to x_{N-1})
-N = int(1e3)
+N = int(3e1)
 eps = 0.5
+
+# !!! NOTE !!!, this offset may be different from 0, 
+# but in that case the IBM is not working anymore as 
+# it enforcces the function to be 0 in that region !!
+offset=0
 
 # Define geometrical limits
 x0 = -1
@@ -21,7 +26,7 @@ u    = lambda x: x**2 - eps**2
 f_0  = lambda x: 2 + 0*x  # 0*x needed for the plot at least
 u_p  = lambda x: 2*x
 # chi needs to be 0 in the fluid region and 1 elsewhere
-chi  = lambda x: 0.5 * (1 - np.sign(abs(x) - eps))
+chi  = lambda x: 0.5 * (1 - np.sign(abs(x - offset) - eps))
 f    = lambda x: f_0(x) * (1 - chi(x))
 u_ex = lambda x: u(x) * (1 - chi(x)) 
 
@@ -50,13 +55,15 @@ A_lap = (np.diag(-2*np.ones(N)) + np.diag(np.ones(N-1), -1) +
     np.diag(np.ones(N-1), 1) )/h**2
 b = np.zeros(N)
 
-eta = 1/h**5
+eta = h**2
 B = np.zeros([N, N])
 chi_vec = chi(x)/eta
 B = np.diag( np.diag(chi_vec) )
 
 # initialize b_ibm
 for i in range(N):
+    b[i] = f_0(i*h+x0)
+    # Strangely works with both of them
     b[i] = f(i*h+x0)
 
 for i in range(2, N-2):
@@ -73,20 +80,34 @@ A_lap[-1, :]  = np.zeros(N)
 A_lap[-1, -1] = 1
 b[-1] = u_ex(xN)
 
-print(f"{A_lap = }")
 Uibm = np.zeros(N)
 Uibm = np.linalg.solve(A_lap, b)
-print(f"{b = }")
-print(f"{Uibm = }")
-plt.plot(x, Uibm ,'-', label='IBM sol')
-plt.plot(x, exact, label='exact sol')
-plt.axvline(-eps, color='grey')
-plt.axvline(+eps, color='grey')
-plt.grid()
-plt.legend()
+
+# # Print Matrix datas
+# print(f"{A_lap = }")
+# print(f"{b = }")
+# print(f"{Uibm = }")
+
+# Visualize matrix better
+# plt.pcolormesh(A_lap, cmap='plasma', shading='auto')
+# Modified version of the matrix to better understand the effect of the IBM
+plt.pcolormesh(h**2*A_lap, cmap='viridis', shading='auto')
+plt.colorbar(label="Value")
+plt.title("Matrix Visualization using pcolormesh")
 plt.show()
 
-exit()
+
+# PLOT the result
+plot_result=0
+if plot_result==1:
+    plt.plot(x, Uibm ,'-', label='IBM sol')
+    plt.plot(x, exact, label='exact sol')
+    plt.axvline(-eps, color='grey')
+    plt.axvline(+eps, color='grey')
+    plt.grid()
+    plt.legend()
+    plt.show()
+
 """Works, the 1d problem without the IBM returns the correct approximation"""
 noIBM=1
 if noIBM==0:
