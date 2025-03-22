@@ -67,7 +67,8 @@ The steps are:
 """
 chi_vals = chi(x)
 plt.plot(chi_vals)
-plt.plot(exact)
+b = b*chi_vals
+plt.plot(b)
 plt.show()
 
 # Compute Fourier frequencies
