@@ -9,7 +9,7 @@ BC: u(-1), u(1), u'(-1), u'(1) from u_ex
 # Number of points (x_0 to x_{N-1}) 
 # For efficiency porpouse is better if they are power
 # of 2 due to ffts algorithms
-N = int(2**7)
+N = int(2**9)
 eps = 0.0
 
 # !!! NOTE !!!, this offset may be different from 0, 
@@ -87,7 +87,7 @@ plt.legend()
 plt.show()
 
 # Solve in Fourier space
-U_k = F_k / (-k**2 + B_k)  
+U_k = F_k / (-k**2 * h**2 + B_k)  
 U_k[0] = 0
 
 # Transform back to real space // In the case of u_ex being sin -like  
