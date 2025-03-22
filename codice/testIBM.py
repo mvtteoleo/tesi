@@ -2,12 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 """
-Trying to solve -u'' = f on [-1, 1]
+Trying to solve u'' = f on [-1, 1]
 f such that : u_ex = x^2-eps^2 & u_ex <0 u_ex=0 
 BC: u(-1), u(1), u'(-1), u'(1) from u_ex
 """
 # Number of points (x_0 to x_{N-1})
-N = int(3e1)
+N = int(3e2)
 eps = 0.5
 
 # !!! NOTE !!!, this offset may be different from 0, 
@@ -27,44 +27,37 @@ f_0  = lambda x: 2 + 0*x  # 0*x needed for the plot at least
 u_p  = lambda x: 2*x
 # chi needs to be 0 in the fluid region and 1 elsewhere
 chi  = lambda x: 0.5 * (1 - np.sign(abs(x - offset) - eps))
-f    = lambda x: f_0(x) * (1 - chi(x))
 u_ex = lambda x: u(x) * (1 - chi(x)) 
 
 x = np.linspace(x0, xN, N, endpoint=True)
 
-# Plot chi per check
-# plt.plot(x, chi(x))
-# plt.show()
-
 # Get exact solution in a vector for ease of use
 exact = np.zeros(N)
-for i in range(N):
-    exact[i] = u_ex(i*h + x0)
+exact = u_ex(x)
 
+# initialize b_ibm
+b = np.zeros(N)
+b = f_0(x)
 
 # %% Implement IBM
 """
-To implement IBM the system moves from -u'' = f to 
+To implement IBM the system moves from u'' = f to 
 u'' + chi*u/eta = f that discretized is:
 A_lap u + B u = f_b
 where B_ij = chi(x_i)* delta_ij /eta
 so A U = b
 """
+
 # Laplacian operator
 A_lap = (np.diag(-2*np.ones(N)) + np.diag(np.ones(N-1), -1) + 
     np.diag(np.ones(N-1), 1) )/h**2
-b = np.zeros(N)
 
-eta = h**2
+# Needs to be small, if kept as h**2 the  solution is very 
+# oscillating probably due to losing the diagonal dominance
+eta = h**4
 B = np.zeros([N, N])
 chi_vec = chi(x)/eta
 B = np.diag( np.diag(chi_vec) )
-
-# initialize b_ibm
-for i in range(N):
-    b[i] = f_0(i*h+x0)
-    # Strangely works with both of them
-    b[i] = f(i*h+x0)
 
 for i in range(2, N-2):
     A_lap[i, i] += B[i]
