@@ -24,7 +24,6 @@ h = (xN-x0)/(N-1)
 u    = lambda x: x**2 - eps**2
 # f = u''
 f_0  = lambda x: 2 + 0*x  # 0*x needed for the plot at least
-u_p  = lambda x: 2*x
 # chi needs to be 0 in the fluid region and 1 elsewhere
 chi  = lambda x: 0.5 * (1 - np.sign(abs(x - offset) - eps))
 u_ex = lambda x: u(x) * (1 - chi(x)) 

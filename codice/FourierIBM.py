@@ -9,33 +9,35 @@ BC: u(-1), u(1), u'(-1), u'(1) from u_ex
 # Number of points (x_0 to x_{N-1}) 
 # For efficiency porpouse is better if they are power
 # of 2 due to ffts algorithms
-N = int(2**5)
-eps = 0.5
+N = int(2**3)
+eps = 0.0
 
 # !!! NOTE !!!, this offset may be different from 0, 
 # but in that case the IBM is not working anymore as 
 # it enforcces the function to be 0 in that region !!
-offset=0
+offset= np.pi
 
 # Define geometrical limits
-x0 = -1
-xN = 1
-h = (xN-x0)/(N-1)
+x0 = 0
+xN = 2*np.pi
+# ******* WARNING ******* 
+# Here we do fft so 0 and 2pi are the same 
+# value so to impose this we need to have the domain close on
+# one of the two end !!
+h = (xN-x0)/(N)
+x = np.linspace(x0, xN, N, endpoint=False)
 
 eta  = h**5
 
 # Set functions
-u    = lambda x: x**2 - eps**2
+u    = lambda x: np.sin(x)
 # f = u''
-f_0  = lambda x: 2 + 0*x  # 0*x needed for the plot at least
-u_p  = lambda x: 2*x
+f_0  = lambda x: -u(x) #2 + 0*x  # 0*x needed for the plot at least
 # chi needs to be 0 in the fluid region and 1 elsewhere
 # chi  = lambda x: 0.5 * (1 - np.sign(abs(x - offset) - eps))
 chi = lambda x: 0.5 * (1 - np.tanh(10 * (abs(x - offset) - eps)))
-f    = lambda x: f_0(x) * (1 - chi(x))
-u_ex = lambda x: u(x) * (1 - chi(x)) 
+u_ex = lambda x: u(x) # * (1 - chi(x)) 
 
-x = np.linspace(x0, xN, N, endpoint=True)
 
 # Plot chi per check
 # plt.plot(x, chi(x))
@@ -70,21 +72,21 @@ k[0] = 1e-10  # Avoid division by zero
 
 # Compute FFT of forcing function and IBM term
 F_k = np.fft.fft(b)
-B_k = np.fft.fft(chi_vals) / eta  # No matrix needed!
+B_k = np.zeros(N) # np.fft.fft(chi_vals) / eta  # No matrix needed!
 
 
 
-plt.plot(k/(2*np.pi), np.real(-k**2 + B_k), label='real pt')
-plt.plot(k/(2*np.pi), np.imag(-k**2 + B_k), label='imag pt')
+plt.plot(np.real(-k**2 + B_k), label='real pt')
+plt.plot(np.imag(-k**2 + B_k), label='imag pt')
 plt.legend()
 plt.show()
 
 # Solve in Fourier space
 U_k = F_k / (-k**2 + B_k)  
+U_k[0] = 0
 
 # Transform back to real space
 U_fft = np.real(np.fft.ifft(U_k))
-U_fft = np.imag(np.fft.ifft(U_k))
 
 # exit()
 # Plot results
