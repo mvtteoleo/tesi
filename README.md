@@ -5,9 +5,6 @@ In questo file tengo un po di promemoria riguardo a tesi e file letti.
 
 ## DA MAIL prof 
 
-* Germaine_Mydlarski_Cortelezzi_JCompPhys_v240_2013.pdf 
-    Argomento MOOOLTO interessante, spiegano le basi di un metodo numerico per risolvere le _advection diffusion equation_, sarebbe figo da usare/implementare in ottica tesi **molto numerica**
-
 [JFM](https://www.cambridge.org) 
 
 # Ricerca iniziale
