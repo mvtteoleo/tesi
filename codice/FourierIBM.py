@@ -9,7 +9,7 @@ BC: u(-1), u(1), u'(-1), u'(1) from u_ex
 # Number of points (x_0 to x_{N-1}) 
 # For efficiency porpouse is better if they are power
 # of 2 due to ffts algorithms
-N = int(2**3)
+N = int(2**7)
 eps = 0.0
 
 # !!! NOTE !!!, this offset may be different from 0, 
@@ -32,7 +32,8 @@ eta  = h**5
 # Set functions
 u    = lambda x: np.sin(x)
 # f = u''
-f_0  = lambda x: -u(x) #2 + 0*x  # 0*x needed for the plot at least
+f_0  = lambda x: -u(x)
+
 # chi needs to be 0 in the fluid region and 1 elsewhere
 # chi  = lambda x: 0.5 * (1 - np.sign(abs(x - offset) - eps))
 chi = lambda x: 0.5 * (1 - np.tanh(10 * ((x - offset) - eps)))
@@ -88,7 +89,8 @@ plt.show()
 U_k = F_k / (-k**2 + B_k)  
 U_k[0] = 0
 
-# Transform back to real space
+# Transform back to real space // In the case of u_ex being sin -like  
+# the values are in the real plane
 U_fft = np.real(np.fft.ifft(U_k))
 U_fft = U_fft*chi_vals
 
@@ -100,7 +102,8 @@ plt.plot(x, u_ex(x), '--', label='Exact solution', alpha=0.7)
 plt.axvline(-eps, color='grey', linestyle="--", label="Interface")
 plt.axvline(+eps, color='grey', linestyle="--")
 plt.xlabel("x")
-plt.ylabel("u(x)")
+plt.ylabel("u(x)", rotation=0)
+plt.tight_layout()
 plt.legend()
 plt.grid()
 plt.title("IBM Solution via Fourier Transform")
