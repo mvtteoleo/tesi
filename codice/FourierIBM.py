@@ -35,8 +35,8 @@ u    = lambda x: np.sin(x)
 f_0  = lambda x: -u(x) #2 + 0*x  # 0*x needed for the plot at least
 # chi needs to be 0 in the fluid region and 1 elsewhere
 # chi  = lambda x: 0.5 * (1 - np.sign(abs(x - offset) - eps))
-chi = lambda x: 0.5 * (1 - np.tanh(10 * (abs(x - offset) - eps)))
-u_ex = lambda x: u(x) # * (1 - chi(x)) 
+chi = lambda x: 0.5 * (1 - np.tanh(10 * ((x - offset) - eps)))
+u_ex = lambda x: u(x)  * chi(x) 
 
 
 # Plot chi per check
@@ -65,6 +65,9 @@ The steps are:
 - ifft(u^) to get the final answer
 """
 chi_vals = chi(x)
+plt.plot(chi_vals)
+plt.plot(exact)
+plt.show()
 
 # Compute Fourier frequencies
 k = np.fft.fftfreq(N, d=h) * 2 * np.pi  # Frequency domain
@@ -87,6 +90,7 @@ U_k[0] = 0
 
 # Transform back to real space
 U_fft = np.real(np.fft.ifft(U_k))
+U_fft = U_fft*chi_vals
 
 # exit()
 # Plot results
