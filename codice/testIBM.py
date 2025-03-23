@@ -90,7 +90,7 @@ plt.show()
 
 
 # PLOT the result
-plot_result=0
+plot_result=1
 if plot_result==1:
     plt.plot(x, Uibm ,'-', label='IBM sol')
     plt.plot(x, exact, label='exact sol')
