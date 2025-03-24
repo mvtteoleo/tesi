@@ -1,6 +1,4 @@
 #include "mesh.hpp"
-#include <algorithm>
-#include <iostream>
 #include <vector>
 int main (int argc, char *argv[]) {
     // Domain definition
@@ -30,9 +28,20 @@ int main (int argc, char *argv[]) {
     // Domain initialization 
     // Set u_0 on \Omega
     mesh.applyIC(t, h);
-    mesh.print();
-    // Solver
 
+    // Solver
+    double dt = 1e-4;
+    double Tfinal = 1e-3;
+    Tensor2D<double> final = mesh;
+    while(dt<Tfinal){
+        final.applyBC_ext_dom(t,h);
+        final = mesh.timestep(dt, h, t);
+        dt+=dt;
+    };
+
+
+    final.print();
+    
 
     // Export data to python for visualization
     return 0;
