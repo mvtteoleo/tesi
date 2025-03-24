@@ -5,8 +5,8 @@
 int main (int argc, char *argv[]) {
     // Domain definition
     unsigned int Ndim = 2;
-    unsigned int Nx = 1e1;
-    unsigned int Ny = 1e1;
+    unsigned int Nx = 2e2;
+    unsigned int Ny = 2e2;
 
     // Define x0 and xN, points that define the domain as  
     //  ^ y
@@ -32,7 +32,7 @@ int main (int argc, char *argv[]) {
     mesh.applyIC(t, h);
 
     // Solver
-    double dt = 1e-4;
+    double dt = 1e-5;
     double Tfinal = 1e-2;
     Tensor2D<double> final = mesh;
     while(t<Tfinal){
@@ -41,9 +41,8 @@ int main (int argc, char *argv[]) {
         t+=dt;
     };
     double error = final.computeL1Error(h, t);
-    std::cout << "\n Error: "<< error << std::endl; 
+    std::cout << "\n Error: "<< error << "\n"; 
 
-    final.print();
     
 
     // Export data to python for visualization

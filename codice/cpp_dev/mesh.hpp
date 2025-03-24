@@ -122,7 +122,7 @@ public:
             for (size_t j = 0; j < Ny; ++j) {
                 std::vector<T> x{i * h, j * h};
                 T exactValue = u_exact(x, t);
-                T error = std::abs((*this)(i, j) - exactValue);
+                T error = std::abs( (*this)(i, j) - exactValue );
                 errorSum += error;
             }
         }
