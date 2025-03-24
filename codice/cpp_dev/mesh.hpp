@@ -109,6 +109,26 @@ public:
         }
         return solution;
     }
+
+
+    /*
+    * Obtain the error in L1 norm
+    */
+    T computeL1Error(T & h, T & t) const {
+        T errorSum = 0.0;
+        size_t totalPoints = Nx * Ny;
+
+        for (size_t i = 0; i < Nx; ++i) {
+            for (size_t j = 0; j < Ny; ++j) {
+                std::vector<T> x{i * h, j * h};
+                T exactValue = u_exact(x, t);
+                T error = std::abs((*this)(i, j) - exactValue);
+                errorSum += error;
+            }
+        }
+
+        return errorSum / totalPoints; // Normalize by number of points
+    }
 };
 
 

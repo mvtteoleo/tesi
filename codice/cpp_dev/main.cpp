@@ -1,4 +1,6 @@
 #include "mesh.hpp"
+#include <iostream>
+#include <ostream>
 #include <vector>
 int main (int argc, char *argv[]) {
     // Domain definition
@@ -19,7 +21,7 @@ int main (int argc, char *argv[]) {
     double h = (xN[1] - x0[1])/Nx;
       
 
-    double t = 0;
+    double t = 0.0;
 
     // Define the 2D mesh // 2d tensor to store the solurtion
 //     std::vector<std::vector<double>> tensor(Nx, std::vector<double>(Ny, 0.0));
@@ -31,14 +33,15 @@ int main (int argc, char *argv[]) {
 
     // Solver
     double dt = 1e-4;
-    double Tfinal = 1e-3;
+    double Tfinal = 1e-2;
     Tensor2D<double> final = mesh;
-    while(dt<Tfinal){
+    while(t<Tfinal){
         final.applyBC_ext_dom(t,h);
         final = mesh.timestep(dt, h, t);
-        dt+=dt;
+        t+=dt;
     };
-
+    double error = final.computeL1Error(h, t);
+    std::cout << "\n Error: "<< error << std::endl; 
 
     final.print();
     
