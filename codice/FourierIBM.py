@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 """
-Trying to solve -u'' = f on [-1, 1]
+Trying to solve u'' = f on [-1, 1]
 f such that : u_ex = x^2-eps^2 & u_ex <0 u_ex=0 
 BC: u(-1), u(1), u'(-1), u'(1) from u_ex
 """
