@@ -2,6 +2,7 @@
 #define MESH_HPP
 
 
+#include <cmath>
 #include <vector>
 #include <iostream>
 #include "funcs.hpp"
@@ -92,7 +93,6 @@ public:
     /*
     * Advances the solution of 1 timestep
     */
-    // Tensor2D 
     void
     timestep(const T& dt, const T& h, const T& t){
         Tensor2D<T> solution(Nx, Ny);  // Create a new tensor
@@ -110,12 +110,12 @@ public:
             }
         }
         (*this) = solution;
-       // return solution;
     }
 
 
     /*
     * Obtain the error in L1 norm
+    * err = sum_i( abs(u_i - u_exact) ) / (N_pts)
     */
     T computeL1Error(T & h, T & t) const {
         T errorSum = 0.0;
@@ -134,9 +134,11 @@ public:
     }
 
     /*
-    * Obtain the error in L1 norm
+    * Obtain the error in L2 norm
+    * err = sqrt(  sum( (u_i -u_exact)^2 ) ) / (N_pts)
     */
-    T computeL2Error(T & h, T & t) const {
+    T 
+    computeL2Error(T & h, T & t) const {
         T errorSum = 0.0;
         size_t totalPoints = Nx * Ny;
 
@@ -144,12 +146,12 @@ public:
             for (size_t j = 0; j < Ny; ++j) {
                 std::vector<T> x{i * h, j * h};
                 T exactValue = u_exact(x, t);
-                T error = std::abs( std::pow( (*this)(i, j), 2) - exactValue*exactValue );
+                T error = std::pow( ((*this)(i, j)  - exactValue ), 2);
                 errorSum += error;
             }
         }
 
-        return errorSum / totalPoints; // Normalize by number of points
+        return std::sqrt(errorSum )/ totalPoints; // Normalize by number of points
     }
 };
 
