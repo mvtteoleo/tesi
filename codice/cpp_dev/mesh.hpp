@@ -94,7 +94,7 @@ public:
     * Advances the solution of 1 timestep
     */
     void
-    timestep(const T& dt, const T& h, const T& t){
+    ExplEuler(const T& dt, const T& h, const T& t){
         Tensor2D<T> solution(Nx, Ny);  // Create a new tensor
         
         for (size_t i = 1; i < Nx - 1; ++i) {
@@ -111,6 +111,61 @@ public:
         }
         (*this) = solution;
     }
+
+    /*
+     *   RK3
+     *   !! WORST THAT EXPL EULER CHECK BC IMPOSITION !!
+     */
+void RK3(const T& dt, const T& h, const T& t) {
+    Tensor2D<T> Y2(Nx, Ny), Buffer(Nx, Ny), Y3(Nx, Ny), solution(Nx, Ny);
+    
+    // Apply BC to this to enforce them in Y2
+    (*this).applyBC_ext_dom(t + 64.0/120.0*dt, h);
+    for (size_t i = 1; i < Nx - 1; ++i) {
+        for (size_t j = 1; j < Ny - 1; ++j) {
+            std::vector<T> x{i * h, j * h};
+            T lapU = ((*this)(i-1, j) - 2 * (*this)(i, j) + (*this)(i+1, j) +
+                      (*this)(i, j-1) - 2 * (*this)(i, j) + (*this)(i, j+1)) / (h * h);
+            T f_un = f(x, t) - lapU;
+            Y2(i, j) = (*this)(i, j) + (64.0 / 120.0) * dt * f_un;
+        }
+    }
+
+    
+    // Apply BC to Y2 to enforce them in Y3
+    Y2.applyBC_ext_dom(t + 80./120.*dt, h);
+    for (size_t i = 1; i < Nx - 1; ++i) {
+        for (size_t j = 1; j < Ny - 1; ++j) {
+            std::vector<T> x{i * h, j * h};
+            T lapU = ((*this)(i-1, j) - 2 * (*this)(i, j) + (*this)(i+1, j) +
+                      (*this)(i, j-1) - 2 * (*this)(i, j) + (*this)(i, j+1)) / (h * h);
+            T f_un = f(x, t) - lapU;
+            Buffer(i, j) = Y2(i, j) - (34.0 / 120.0) * dt * f_un;
+        }
+    }
+    
+    for (size_t i = 1; i < Nx - 1; ++i) {
+        for (size_t j = 1; j < Ny - 1; ++j) {
+            std::vector<T> x{i * h, j * h};
+            T lapU = ((Y2(i-1, j) - 2 * Y2(i, j) + Y2(i+1, j)) +
+                      (Y2(i, j-1) - 2 * Y2(i, j) + Y2(i, j+1))) / (h * h);
+            T f_Y2 = f(x, t + (64.0 / 120.0) * dt) - lapU;
+            Y3(i, j) = Buffer(i, j) + (50.0 / 120.0) * dt * f_Y2;
+        }
+    }
+    
+    for (size_t i = 1; i < Nx - 1; ++i) {
+        for (size_t j = 1; j < Ny - 1; ++j) {
+            std::vector<T> x{i * h, j * h};
+            T lapU = ((Y3(i-1, j) - 2 * Y3(i, j) + Y3(i+1, j)) +
+                      (Y3(i, j-1) - 2 * Y3(i, j) + Y3(i, j+1))) / (h * h);
+            T f_Y3 = f(x, t + (80.0 / 120.0) * dt) - lapU;
+            solution(i, j) = Buffer(i, j) + (90.0 / 120.0) * dt * f_Y3;
+        }
+    }
+    
+    (*this) = solution;
+}
 
 
     /*
