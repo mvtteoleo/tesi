@@ -51,7 +51,7 @@ public:
         for (int i=0; i<Nx; ++i) {
             for (int j=0; j<Nx; ++j) {
                 std::vector<T> x{i*h, j*h};
-                mesh[i][j] = u_exact(x, t);
+                 (*this)(i, j)= u_exact(x, t);
             }
         }
     };
@@ -64,27 +64,27 @@ public:
         // BC on lower side
        for(int i=0; i<Nx; ++i){
             std::vector<T> x{i*h, 0};
-            mesh[i][0] = u_exact(x, t);
+            (*this)(i, 0) = u_exact(x, t);
         } 
           
         // BC on upper side
         int j=Ny-1;
        for(int i=0; i<Nx; ++i){
             std::vector<T> x{i*h, j*h};
-            mesh[i][j] = u_exact(x, t);
+            (*this)(i, j) = u_exact(x, t);
         } 
           
         // BC on left side
        for(int j=0; j<Nx; ++j){
             std::vector<T> x{0, j*h};
-            mesh[0][j] = u_exact(x, t);
+            (*this)(0, j)= u_exact(x, t);
         } 
 
         // BC on right side
         int i = Nx-1;
        for(int j=0; j<Nx; ++j){
             std::vector<T> x{i*h, j*h};
-            mesh[i][j] = u_exact(x, t);
+            (*this)(i, j) = u_exact(x, t);
         } 
     }; //end applyBC_ext_dom
 
@@ -92,7 +92,9 @@ public:
     /*
     * Advances the solution of 1 timestep
     */
-    Tensor2D timestep(const T& dt, const T& h, const T& t){
+    // Tensor2D 
+    void
+    timestep(const T& dt, const T& h, const T& t){
         Tensor2D<T> solution(Nx, Ny);  // Create a new tensor
         
         for (size_t i = 1; i < Nx - 1; ++i) {
@@ -107,7 +109,8 @@ public:
                 solution(i, j) = (*this)(i, j) + dt * (f(x, t) - lapU);
             }
         }
-        return solution;
+        (*this) = solution;
+       // return solution;
     }
 
 
@@ -123,6 +126,25 @@ public:
                 std::vector<T> x{i * h, j * h};
                 T exactValue = u_exact(x, t);
                 T error = std::abs( (*this)(i, j) - exactValue );
+                errorSum += error;
+            }
+        }
+
+        return errorSum / totalPoints; // Normalize by number of points
+    }
+
+    /*
+    * Obtain the error in L1 norm
+    */
+    T computeL2Error(T & h, T & t) const {
+        T errorSum = 0.0;
+        size_t totalPoints = Nx * Ny;
+
+        for (size_t i = 0; i < Nx; ++i) {
+            for (size_t j = 0; j < Ny; ++j) {
+                std::vector<T> x{i * h, j * h};
+                T exactValue = u_exact(x, t);
+                T error = std::abs( std::pow( (*this)(i, j), 2) - exactValue*exactValue );
                 errorSum += error;
             }
         }

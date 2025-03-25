@@ -87,7 +87,7 @@ Uibm = np.linalg.solve(A_lap, b)
 # Visualize matrix better
 # plt.pcolormesh(A_lap, cmap='plasma', shading='auto')
 # Modified version of the matrix to better understand the effect of the IBM
-plt.pcolormesh(h**2*A_lap, cmap='viridis', shading='auto')
+plt.pcolormesh(h**2*A_lap, cmap='magma', shading='auto')
 plt.colorbar(label="Value")
 plt.title("Matrix Visualization using pcolormesh")
 plt.show()
