@@ -33,26 +33,27 @@ int main (int argc, char *argv[]) {
 
     double h = (xN[1] - x0[1])/Nx;
 
-    Tensor2D<double> final = mesh;
+    Tensor2D<double> test1 = mesh;
     
     // Domain initialization 
     // Set u_0 on \Omega
-    final.applyIC(t, h);
-    Tensor2D<double> RK3 = final;
+    test1.applyIC(t, h);
+    Tensor2D<double> test2 = test1;
 
     // Solver
-    double dt = 1e-5;//std::pow(10, -ii);
-    double Tfinal = 200*dt;
+    double dt = 1e-3;//std::pow(10, -ii);
+    double Tfinal = 10*dt;
     while(t<Tfinal){
-        final.applyBC_ext_dom(t,h);
-        final.ExplEuler(dt, h, t);
-        RK3.applyBC_ext_dom(t,h);
-        RK3.StandardRK3(dt, h, t);
+
+        test1.ExplEuler(dt, h, t);
+
+        test2.StandardRK3(dt, h, t);
         t+=dt;
     };
         
-    ;
-    std::cout << "\n Error with N = " << Nx << "| L2 Euler: "<< final.computeL2Error(h, t) <<  " | L2 RK3 : "<< RK3.computeL2Error(h,t) << "\n"; 
+    std::cout << "\n Error with N = " << Nx << 
+            " | L2 Euler: "<< test1.computeL2Error(h, t) <<  
+            " | L2 RK3  : "<< test2.computeL2Error(h, t) << "\n"; 
 
         
     }//end for

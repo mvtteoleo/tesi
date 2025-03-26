@@ -100,20 +100,20 @@ public:
     */
     void
     ExplEuler(const T& dt, const T& h, const T& t){
-        Tensor2D<T> solution(Nx, Ny);  // Create a new tensor
+        Tensor2D<T> solution = (*this);  // Create a new tensor
+        solution.applyBC_ext_dom(t, h);
         
         for (size_t i = 1; i < Nx - 1; ++i) {
             for (size_t j = 1; j < Ny - 1; ++j) {
                 std::vector<T> x{i * h, j * h};
 
                 // Compute Laplacian using finite differences
-                T lapU = laplacian( (*this), i, j, h);
+                T lapU = laplacian( solution, i, j, h);
 
                 // Update solution
-                solution(i, j) = (*this)(i, j) + dt * (f(x, t) - 0*lapU);
+               (*this)(i, j) = solution(i, j) + dt * (f(x, t) - 0*lapU);
             }
         }
-        (*this) = solution;
     }
 
 
@@ -121,20 +121,22 @@ public:
     StandardRK3(const double dt, const double h, const double t) {
     Tensor2D<double> k1(Nx, Ny, 0), k2(Nx, Ny, 0), k3(Nx, Ny, 0), u_temp(Nx, Ny, 0);
 
+    k1.applyBC_ext_dom(t, h);
     // Compute k1 = f(x, y, t^n) - laplacian(u^n)
     for (size_t i = 1; i < Nx - 1; ++i) {
         for (size_t j = 1; j < Ny - 1; ++j) {
             std::vector<double> x{i * h, j * h};  // Position vector (x, y)
             
-            double lapU = 0*((*this)(i+1, j) + (*this)(i-1, j) +
+            double lapU = ((*this)(i+1, j) + (*this)(i-1, j) +
                           (*this)(i, j+1) + (*this)(i, j-1) -
                           4 * (*this)(i, j)) / (h * h);
             
-            k1(i, j) = f(x, t) - lapU;
+            k1(i, j) = f(x, t) - 0*lapU;
         }
     }
 
     // Compute k2 = f(x, y, t^n + dt/2) - laplacian(u^n + dt/2 * k1)
+    k2.applyBC_ext_dom(t + 0.5*dt, h);
     for (size_t i = 1; i < Nx - 1; ++i) {
         for (size_t j = 1; j < Ny - 1; ++j) {
             std::vector<double> x{i * h, j * h};
@@ -150,6 +152,7 @@ public:
     }
 
     // Compute k3 = f(x, y, t^n + dt) - laplacian(u^n - dt*k1 + 2*dt*k2)
+    k3.applyBC_ext_dom(t + dt, h);
     for (size_t i = 1; i < Nx - 1; ++i) {
         for (size_t j = 1; j < Ny - 1; ++j) {
             std::vector<double> x{i * h, j * h};
