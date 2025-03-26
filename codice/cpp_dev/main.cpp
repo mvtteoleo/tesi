@@ -2,18 +2,27 @@
 #include <cmath>
 #include <iostream>
 #include <ostream>
+#include <iomanip>
 #include <vector>
 int main (int argc, char *argv[]) {
     // Domain definition
     unsigned int Ndim = 2;
-    unsigned int Nx= 5e2;
-    unsigned int Ny= 5e2;
+    unsigned int Nx= 1e2;
+    unsigned int Ny= 1e2;
 
     // Iterate to see convergence
-    for(double ii = 2; ii<6; ++ii){
-        int N = 10*std::pow(2, ii); 
-        Nx = N;
-        Ny = N;
+    std::cout << "N    |      EE err |     RK3 err"; 
+    
+
+    // Control convergence
+    std::vector<double> conv1;
+    std::vector<double> conv2;
+
+
+    for(double ii = 0; ii<5; ++ii){
+//      int N = 10*std::pow(3, ii); 
+//      Nx = N;
+//      Ny = N;
     // Define x0 and xN, points that define the domain as  
     //  ^ y
     //  | _____. xN
@@ -41,8 +50,8 @@ int main (int argc, char *argv[]) {
     Tensor2D<double> test2 = test1;
 
     // Solver
-    double dt = 1e-3;//std::pow(10, -ii);
-    double Tfinal = 10*dt;
+    double Tfinal = 2*M_PI;// 100*dt;
+    double dt = 0.1*Tfinal/std::pow(2, ii);// 2e-1
     while(t<Tfinal){
 
         test1.ExplEuler(dt, h, t);
@@ -51,12 +60,19 @@ int main (int argc, char *argv[]) {
         t+=dt;
     };
         
-    std::cout << "\n Error with N = " << Nx << 
-            " | L2 Euler: "<< test1.computeL2Error(h, t) <<  
-            " | L2 RK3  : "<< test2.computeL2Error(h, t) << "\n"; 
-
+double L2test1 = test1.computeL2Error(h, t);
+double L2test2 = test2.computeL2Error(h, t);
+    std::cout << std::setprecision(3) << std::scientific 
+            << "\n" << dt << 
+            "\t"         << L2test1  <<  
+            "\t"         << L2test2  << "\n"; 
+    conv1.insert(conv1.begin(), L2test1);
+    conv2.insert(conv2.begin(), L2test2);
         
     }//end for
+    
+
+    // Print Order of convergence
     
     
 

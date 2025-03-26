@@ -143,11 +143,11 @@ public:
             
             u_temp(i, j) = (*this)(i, j) + (dt / 2.0) * k1(i, j);
             
-            double lapU = 0*(u_temp(i+1, j) + u_temp(i-1, j) +
+            double lapU = (u_temp(i+1, j) + u_temp(i-1, j) +
                            u_temp(i, j+1) + u_temp(i, j-1) -
                            4 * u_temp(i, j)) / (h * h);
             
-            k2(i, j) = f(x, t + dt/2) - lapU;
+            k2(i, j) = f(x, t + dt/2) - 0*lapU;
         }
     }
 
@@ -159,11 +159,11 @@ public:
             
             u_temp(i, j) = (*this)(i, j) - dt * k1(i, j) + 2 * dt * k2(i, j);
             
-            double lapU = 0*(u_temp(i+1, j) + u_temp(i-1, j) +
+            double lapU = (u_temp(i+1, j) + u_temp(i-1, j) +
                            u_temp(i, j+1) + u_temp(i, j-1) -
                            4 * u_temp(i, j)) / (h * h);
             
-            k3(i, j) = f(x, t + dt) - lapU;
+            k3(i, j) = f(x, t + dt) - 0*lapU;
         }
     }
 
