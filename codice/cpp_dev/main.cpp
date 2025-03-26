@@ -10,7 +10,7 @@ int main (int argc, char *argv[]) {
     unsigned int Ny= 5e2;
 
     // Iterate to see convergence
-    for(double ii = 0; ii<6; ++ii){
+    for(double ii = 2; ii<6; ++ii){
         int N = 10*std::pow(2, ii); 
         Nx = N;
         Ny = N;
@@ -24,32 +24,35 @@ int main (int argc, char *argv[]) {
     //
     std::vector<double> x0(Ndim, 0);
     std::vector<double> xN(Ndim, 2*M_PI); //  10);
-    double h = (xN[1] - x0[1])/Nx;
       
 
     double t = 0.0;
 
     // Define the 2D mesh & 2d tensor to store the solution
     Tensor2D<double> mesh(Nx, Ny, 0);
+
+    double h = (xN[1] - x0[1])/Nx;
+
     Tensor2D<double> final = mesh;
     
     // Domain initialization 
     // Set u_0 on \Omega
     final.applyIC(t, h);
+    Tensor2D<double> RK3 = final;
 
     // Solver
-    double dt = 0.1*h*h/4.0;//std::pow(10, -ii);
-    double Tfinal = 500*dt;
+    double dt = 1e-5;//std::pow(10, -ii);
+    double Tfinal = 20*dt;
     while(t<Tfinal){
         final.applyBC_ext_dom(t,h);
-        //final.StandardRK3(dt, h, t);
         final.ExplEuler(dt, h, t);
-        //final.RK3(dt, h, t);
+        RK3.applyBC_ext_dom(t,h);
+        RK3.StandardRK3(dt, h, t);
         t+=dt;
     };
         
-    double errorL2 = final.computeL2Error(h, t);
-    std::cout << "\n Error with N = " << Nx << "| L2: "<< errorL2 << "\n"; 
+    ;
+    std::cout << "\n Error with N = " << Nx << "| L2 Euler: "<< final.computeL2Error(h, t) <<  " | L2 RK3 : "<< RK3.computeL2Error(h,t) << "\n"; 
 
         
     }//end for
