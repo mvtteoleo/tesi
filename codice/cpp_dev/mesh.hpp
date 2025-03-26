@@ -110,7 +110,7 @@ public:
                 T lapU = laplacian( (*this), i, j, h);
 
                 // Update solution
-                solution(i, j) = (*this)(i, j) + dt * (f(x, t) - lapU);
+                solution(i, j) = (*this)(i, j) + dt * (f(x, t) - 0*lapU);
             }
         }
         (*this) = solution;
@@ -126,7 +126,7 @@ public:
         for (size_t j = 1; j < Ny - 1; ++j) {
             std::vector<double> x{i * h, j * h};  // Position vector (x, y)
             
-            double lapU = ((*this)(i+1, j) + (*this)(i-1, j) +
+            double lapU = 0*((*this)(i+1, j) + (*this)(i-1, j) +
                           (*this)(i, j+1) + (*this)(i, j-1) -
                           4 * (*this)(i, j)) / (h * h);
             
@@ -141,7 +141,7 @@ public:
             
             u_temp(i, j) = (*this)(i, j) + (dt / 2.0) * k1(i, j);
             
-            double lapU = (u_temp(i+1, j) + u_temp(i-1, j) +
+            double lapU = 0*(u_temp(i+1, j) + u_temp(i-1, j) +
                            u_temp(i, j+1) + u_temp(i, j-1) -
                            4 * u_temp(i, j)) / (h * h);
             
@@ -156,7 +156,7 @@ public:
             
             u_temp(i, j) = (*this)(i, j) - dt * k1(i, j) + 2 * dt * k2(i, j);
             
-            double lapU = (u_temp(i+1, j) + u_temp(i-1, j) +
+            double lapU = 0*(u_temp(i+1, j) + u_temp(i-1, j) +
                            u_temp(i, j+1) + u_temp(i, j-1) -
                            4 * u_temp(i, j)) / (h * h);
             

@@ -42,7 +42,7 @@ int main (int argc, char *argv[]) {
 
     // Solver
     double dt = 1e-5;//std::pow(10, -ii);
-    double Tfinal = 20*dt;
+    double Tfinal = 200*dt;
     while(t<Tfinal){
         final.applyBC_ext_dom(t,h);
         final.ExplEuler(dt, h, t);
