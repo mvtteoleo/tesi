@@ -20,7 +20,7 @@ private:
 public:
     // Constructor
     Tensor2D(size_t Nx, size_t Ny, T init_val = T()) 
-        : Nx(Nx), Ny(Ny), mesh(Nx, std::vector<T>(Ny, init_val)) {}
+    : Nx(Nx), Ny(Ny), mesh(Nx, std::vector<T>(Ny, init_val)) {}
 
     // Access element with (i, j)
     T& operator()(size_t i, size_t j) { return mesh[i][j]; }
@@ -52,7 +52,7 @@ public:
         for (int i=0; i<Nx; ++i) {
             for (int j=0; j<Nx; ++j) {
                 std::vector<T> x{i*h, j*h};
-                 (*this)(i, j)= u_exact(x, t);
+                (*this)(i, j)= u_exact(x, t);
             }
         }
     };
@@ -63,27 +63,27 @@ public:
     */
     void applyBC_ext_dom(const T &t, const T &h){
         // BC on lower side
-       for(int i=0; i<Nx; ++i){
+        for(int i=0; i<Nx; ++i){
             std::vector<T> x{i*h, 0};
             (*this)(i, 0) = u_exact(x, t);
         } 
-          
+
         // BC on upper side
         int j=Ny-1;
-       for(int i=0; i<Nx; ++i){
+        for(int i=0; i<Nx; ++i){
             std::vector<T> x{i*h, j*h};
             (*this)(i, j) = u_exact(x, t);
         } 
-          
+
         // BC on left side
-       for(int j=0; j<Nx; ++j){
+        for(int j=0; j<Nx; ++j){
             std::vector<T> x{0, j*h};
             (*this)(0, j)= u_exact(x, t);
         } 
 
         // BC on right side
         int i = Nx-1;
-       for(int j=0; j<Nx; ++j){
+        for(int j=0; j<Nx; ++j){
             std::vector<T> x{i*h, j*h};
             (*this)(i, j) = u_exact(x, t);
         } 
@@ -102,7 +102,7 @@ public:
     ExplEuler(const T& dt, const T& h, const T& t){
         Tensor2D<T> solution = (*this);  // Create a new tensor
         solution.applyBC_ext_dom(t, h);
-        
+
         for (size_t i = 1; i < Nx - 1; ++i) {
             for (size_t j = 1; j < Ny - 1; ++j) {
                 std::vector<T> x{i * h, j * h};
@@ -111,7 +111,7 @@ public:
                 T lapU = laplacian( solution, i, j, h);
 
                 // Update solution
-               (*this)(i, j) = solution(i, j) + dt * (f(x, t) - 0*lapU);
+                (*this)(i, j) = solution(i, j) + dt * (f(x, t) - 0*lapU);
             }
         }
     }
@@ -119,61 +119,61 @@ public:
 
     void 
     StandardRK3(const double dt, const double h, const double t) {
-    Tensor2D<double> k1(Nx, Ny, 0), k2(Nx, Ny, 0), k3(Nx, Ny, 0), u_temp(Nx, Ny, 0);
+        Tensor2D<double> k1(Nx, Ny, 0), k2(Nx, Ny, 0), k3(Nx, Ny, 0), u_temp(Nx, Ny, 0);
 
-    k1.applyBC_ext_dom(t, h);
-    // Compute k1 = f(x, y, t^n) - laplacian(u^n)
-    for (size_t i = 1; i < Nx - 1; ++i) {
-        for (size_t j = 1; j < Ny - 1; ++j) {
-            std::vector<double> x{i * h, j * h};  // Position vector (x, y)
-            
-            double lapU = ((*this)(i+1, j) + (*this)(i-1, j) +
-                          (*this)(i, j+1) + (*this)(i, j-1) -
-                          4 * (*this)(i, j)) / (h * h);
-            
-            k1(i, j) = f(x, t) - 0*lapU;
+        k1.applyBC_ext_dom(t, h);
+        // Compute k1 = f(x, y, t^n) - laplacian(u^n)
+        for (size_t i = 1; i < Nx - 1; ++i) {
+            for (size_t j = 1; j < Ny - 1; ++j) {
+                std::vector<double> x{i * h, j * h};  // Position vector (x, y)
+
+                double lapU = ((*this)(i+1, j) + (*this)(i-1, j) +
+                    (*this)(i, j+1) + (*this)(i, j-1) -
+                    4 * (*this)(i, j)) / (h * h);
+
+                k1(i, j) = f(x, t) - 0*lapU;
+            }
+        }
+
+        // Compute k2 = f(x, y, t^n + dt/2) - laplacian(u^n + dt/2 * k1)
+        k2.applyBC_ext_dom(t + 0.5*dt, h);
+        for (size_t i = 1; i < Nx - 1; ++i) {
+            for (size_t j = 1; j < Ny - 1; ++j) {
+                std::vector<double> x{i * h, j * h};
+
+                u_temp(i, j) = (*this)(i, j) + (dt / 2.0) * k1(i, j);
+
+                double lapU = (u_temp(i+1, j) + u_temp(i-1, j) +
+                    u_temp(i, j+1) + u_temp(i, j-1) -
+                    4 * u_temp(i, j)) / (h * h);
+
+                k2(i, j) = f(x, t + dt/2) - 0*lapU;
+            }
+        }
+
+        // Compute k3 = f(x, y, t^n + dt) - laplacian(u^n - dt*k1 + 2*dt*k2)
+        k3.applyBC_ext_dom(t + dt, h);
+        for (size_t i = 1; i < Nx - 1; ++i) {
+            for (size_t j = 1; j < Ny - 1; ++j) {
+                std::vector<double> x{i * h, j * h};
+
+                u_temp(i, j) = (*this)(i, j) - dt * k1(i, j) + 2 * dt * k2(i, j);
+
+                double lapU = (u_temp(i+1, j) + u_temp(i-1, j) +
+                    u_temp(i, j+1) + u_temp(i, j-1) -
+                    4 * u_temp(i, j)) / (h * h);
+
+                k3(i, j) = f(x, t + dt) - 0*lapU;
+            }
+        }
+
+        // Update the solution using RK3 formula
+        for (size_t i = 1; i < Nx - 1; ++i) {
+            for (size_t j = 1; j < Ny - 1; ++j) {
+                (*this)(i, j) += (dt / 6.0) * (k1(i, j) + 4.0 * k2(i, j) + k3(i, j));
+            }
         }
     }
-
-    // Compute k2 = f(x, y, t^n + dt/2) - laplacian(u^n + dt/2 * k1)
-    k2.applyBC_ext_dom(t + 0.5*dt, h);
-    for (size_t i = 1; i < Nx - 1; ++i) {
-        for (size_t j = 1; j < Ny - 1; ++j) {
-            std::vector<double> x{i * h, j * h};
-            
-            u_temp(i, j) = (*this)(i, j) + (dt / 2.0) * k1(i, j);
-            
-            double lapU = (u_temp(i+1, j) + u_temp(i-1, j) +
-                           u_temp(i, j+1) + u_temp(i, j-1) -
-                           4 * u_temp(i, j)) / (h * h);
-            
-            k2(i, j) = f(x, t + dt/2) - 0*lapU;
-        }
-    }
-
-    // Compute k3 = f(x, y, t^n + dt) - laplacian(u^n - dt*k1 + 2*dt*k2)
-    k3.applyBC_ext_dom(t + dt, h);
-    for (size_t i = 1; i < Nx - 1; ++i) {
-        for (size_t j = 1; j < Ny - 1; ++j) {
-            std::vector<double> x{i * h, j * h};
-            
-            u_temp(i, j) = (*this)(i, j) - dt * k1(i, j) + 2 * dt * k2(i, j);
-            
-            double lapU = (u_temp(i+1, j) + u_temp(i-1, j) +
-                           u_temp(i, j+1) + u_temp(i, j-1) -
-                           4 * u_temp(i, j)) / (h * h);
-            
-            k3(i, j) = f(x, t + dt) - 0*lapU;
-        }
-    }
-
-    // Update the solution using RK3 formula
-    for (size_t i = 1; i < Nx - 1; ++i) {
-        for (size_t j = 1; j < Ny - 1; ++j) {
-            (*this)(i, j) += (dt / 6.0) * (k1(i, j) + 4.0 * k2(i, j) + k3(i, j));
-        }
-    }
-}
 
 
 
