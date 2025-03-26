@@ -10,7 +10,7 @@ int main (int argc, char *argv[]) {
     unsigned int Ny= 5e2;
 
     // Iterate to see convergence
-    for(double ii = 0; ii<5; ++ii){
+    for(double ii = 0; ii<6; ++ii){
         int N = 10*std::pow(2, ii); 
         Nx = N;
         Ny = N;
@@ -42,8 +42,8 @@ int main (int argc, char *argv[]) {
     double Tfinal = 5*dt;
     while(t<Tfinal){
         final.applyBC_ext_dom(t,h);
-        //final.ExplEuler(dt, h, t);
-        final.RK3(dt, h, t);
+        final.ExplEuler(dt, h, t);
+        //final.RK3(dt, h, t);
         t+=dt;
     };
         
