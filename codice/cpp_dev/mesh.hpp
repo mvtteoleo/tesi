@@ -92,6 +92,7 @@ public:
 
     /*
     * Advances the solution of 1 timestep
+    * Using Expicit Euler method
     */
     void
     ExplEuler(const T& dt, const T& h, const T& t){
@@ -114,53 +115,52 @@ public:
 
     /*
      *   RK3
-     *   !! WORST THAT EXPL EULER CHECK BC IMPOSITION !!
+     *   ! Works,  but stil I order convergence !
+     *   k1 = f(t) - lap(U)
+     *   k2 = f(t + 0.5dt) - lap(k1) 
+     *   k3 = f(t + dt) - lap(k2)
+     *   un+1 = U + dt * (k1 + 4 k2 + k3)/6
      */
 void RK3(const T& dt, const T& h, const T& t) {
-    Tensor2D<T> Y2(Nx, Ny), Buffer(Nx, Ny), Y3(Nx, Ny), solution(Nx, Ny);
+    Tensor2D<T> k1(Nx, Ny, 0), k2(Nx, Ny, 0), k3(Nx, Ny, 0), solution(Nx, Ny, 0);
     
-    // Apply BC to this to enforce them in Y2
-    (*this).applyBC_ext_dom(t + 64.0/120.0*dt, h);
+
+        // First step => compute k1
     for (size_t i = 1; i < Nx - 1; ++i) {
         for (size_t j = 1; j < Ny - 1; ++j) {
             std::vector<T> x{i * h, j * h};
             T lapU = ((*this)(i-1, j) - 2 * (*this)(i, j) + (*this)(i+1, j) +
                       (*this)(i, j-1) - 2 * (*this)(i, j) + (*this)(i, j+1)) / (h * h);
-            T f_un = f(x, t) - lapU;
-            Y2(i, j) = (*this)(i, j) + (64.0 / 120.0) * dt * f_un;
+                // Update k1
+            k1(i, j) = (*this)(i, j) + dt * (f(x, t) - lapU)/6.;
         }
     }
 
     
-    // Apply BC to Y2 to enforce them in Y3
-    Y2.applyBC_ext_dom(t + 80./120.*dt, h);
+        // Second step => compute k2
     for (size_t i = 1; i < Nx - 1; ++i) {
         for (size_t j = 1; j < Ny - 1; ++j) {
             std::vector<T> x{i * h, j * h};
-            T lapU = ((*this)(i-1, j) - 2 * (*this)(i, j) + (*this)(i+1, j) +
-                      (*this)(i, j-1) - 2 * (*this)(i, j) + (*this)(i, j+1)) / (h * h);
-            T f_un = f(x, t) - lapU;
-            Buffer(i, j) = Y2(i, j) - (34.0 / 120.0) * dt * f_un;
+            T lapU = (k1(i-1, j) - 2 * k1(i, j) + k1(i+1, j) +
+                      k1(i, j-1) - 2 * k1(i, j) + k1(i, j+1)) / (h * h);
+                // Update k2
+            k2(i, j) = k1(i, j) + dt * (f(x, t + 0.5*dt) - lapU)/6.;
         }
     }
     
     for (size_t i = 1; i < Nx - 1; ++i) {
         for (size_t j = 1; j < Ny - 1; ++j) {
             std::vector<T> x{i * h, j * h};
-            T lapU = ((Y2(i-1, j) - 2 * Y2(i, j) + Y2(i+1, j)) +
-                      (Y2(i, j-1) - 2 * Y2(i, j) + Y2(i, j+1))) / (h * h);
-            T f_Y2 = f(x, t + (64.0 / 120.0) * dt) - lapU;
-            Y3(i, j) = Buffer(i, j) + (50.0 / 120.0) * dt * f_Y2;
+            T lapU = ((k2(i-1, j) - 2 * k2(i, j) + k2(i+1, j)) +
+                      (k2(i, j-1) - 2 * k2(i, j) + k2(i, j+1))) / (h * h);
+            k3(i, j) = k2(i, j) + 4.* dt* (f(x, t +  dt) - lapU)/6. ;
         }
     }
     
     for (size_t i = 1; i < Nx - 1; ++i) {
         for (size_t j = 1; j < Ny - 1; ++j) {
             std::vector<T> x{i * h, j * h};
-            T lapU = ((Y3(i-1, j) - 2 * Y3(i, j) + Y3(i+1, j)) +
-                      (Y3(i, j-1) - 2 * Y3(i, j) + Y3(i, j+1))) / (h * h);
-            T f_Y3 = f(x, t + (80.0 / 120.0) * dt) - lapU;
-            solution(i, j) = Buffer(i, j) + (90.0 / 120.0) * dt * f_Y3;
+            solution(i, j) = k3(i, j);
         }
     }
     

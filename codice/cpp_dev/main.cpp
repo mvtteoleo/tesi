@@ -10,8 +10,8 @@ int main (int argc, char *argv[]) {
     unsigned int Ny= 5e2;
 
     // Iterate to see convergence
-    for(double ii = 2; ii<5; ++ii){
-        int N = 40; 
+    for(double ii = 0; ii<5; ++ii){
+        int N = 10*std::pow(2, ii); 
         Nx = N;
         Ny = N;
     // Define x0 and xN, points that define the domain as  
@@ -38,18 +38,17 @@ int main (int argc, char *argv[]) {
     final.applyIC(t, h);
 
     // Solver
-    double dt = std::pow(10, -ii);
+    double dt = 1e-3;//std::pow(10, -ii);
     double Tfinal = 5*dt;
     while(t<Tfinal){
         final.applyBC_ext_dom(t,h);
-        final.ExplEuler(dt, h, t);
-        //final.RK3(dt, h, t);
+        //final.ExplEuler(dt, h, t);
+        final.RK3(dt, h, t);
         t+=dt;
     };
         
-    double errorL1 = final.computeL1Error(h, t);
     double errorL2 = final.computeL2Error(h, t);
-    std::cout << "\n Error with N = " << Nx << ": "<< errorL1 << "| L2: "<< errorL2 << "\n"; 
+    std::cout << "\n Error with N = " << Nx << "| L2: "<< errorL2 << "\n"; 
 
         
     }//end for
