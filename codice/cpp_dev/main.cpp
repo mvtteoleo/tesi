@@ -38,10 +38,11 @@ int main (int argc, char *argv[]) {
     final.applyIC(t, h);
 
     // Solver
-    double dt = 1e-3;//std::pow(10, -ii);
-    double Tfinal = 5*dt;
+    double dt = 0.1*h*h/4.0;//std::pow(10, -ii);
+    double Tfinal = 500*dt;
     while(t<Tfinal){
         final.applyBC_ext_dom(t,h);
+        //final.StandardRK3(dt, h, t);
         final.ExplEuler(dt, h, t);
         //final.RK3(dt, h, t);
         t+=dt;

@@ -113,6 +113,58 @@ public:
         (*this) = solution;
     }
 
+
+void StandardRK3(const T& dt, const T& h, const T& t) {
+    Tensor2D<T> k1(Nx, Ny, 0), k2(Nx, Ny, 0), k3(Nx, Ny, 0), u_stage(Nx, Ny, 0);
+
+    // Compute k1 = dU/dt = f - Laplacian(U)
+    for (size_t i = 1; i < Nx - 1; ++i) {
+        for (size_t j = 1; j < Ny - 1; ++j) {
+            std::vector<T> x{i * h, j * h};
+            T lapU = ((*this)(i-1, j) - 2 * (*this)(i, j) + (*this)(i+1, j) +
+                      (*this)(i, j-1) - 2 * (*this)(i, j) + (*this)(i, j+1)) / (h * h);
+            k1(i, j) = f(x, t) - lapU;
+        }
+    }
+
+    // Compute k2 = f(t + dt/2) - Laplacian(U + dt/2 * k1)
+    for (size_t i = 1; i < Nx - 1; ++i) {
+        for (size_t j = 1; j < Ny - 1; ++j) {
+            u_stage(i, j) = (*this)(i, j) + (dt / 2) * k1(i, j);
+        }
+    }
+    for (size_t i = 1; i < Nx - 1; ++i) {
+        for (size_t j = 1; j < Ny - 1; ++j) {
+            std::vector<T> x{i * h, j * h};
+            T lapU = (u_stage(i-1, j) - 2 * u_stage(i, j) + u_stage(i+1, j) +
+                      u_stage(i, j-1) - 2 * u_stage(i, j) + u_stage(i, j+1)) / (h * h);
+            k2(i, j) = f(x, t + dt / 2) - lapU;
+        }
+    }
+
+    // Compute k3 = f(t + dt) - Laplacian(U - dt*k1 + 2*dt*k2)
+    for (size_t i = 1; i < Nx - 1; ++i) {
+        for (size_t j = 1; j < Ny - 1; ++j) {
+            u_stage(i, j) = (*this)(i, j) - dt * k1(i, j) + 2 * dt * k2(i, j);
+        }
+    }
+    for (size_t i = 1; i < Nx - 1; ++i) {
+        for (size_t j = 1; j < Ny - 1; ++j) {
+            std::vector<T> x{i * h, j * h};
+            T lapU = (u_stage(i-1, j) - 2 * u_stage(i, j) + u_stage(i+1, j) +
+                      u_stage(i, j-1) - 2 * u_stage(i, j) + u_stage(i, j+1)) / (h * h);
+            k3(i, j) = f(x, t + dt) - lapU;
+        }
+    }
+
+    // Update U using weighted sum of k1, k2, k3
+    for (size_t i = 1; i < Nx - 1; ++i) {
+        for (size_t j = 1; j < Ny - 1; ++j) {
+            (*this)(i, j) += (dt / 6) * (k1(i, j) + 4 * k2(i, j) + k3(i, j));
+        }
+    }
+}
+
     /*
      *   RK3
      *   ! Works,  but stil I order convergence !
