@@ -119,6 +119,7 @@ public:
 
     void 
     StandardRK3(const double dt, const double h, const double t) {
+        // Creo i tensori temporanei
         Tensor2D<double> k1(Nx, Ny, 0), k2(Nx, Ny, 0), k3(Nx, Ny, 0), u_temp(Nx, Ny, 0);
 
         k1.applyBC_ext_dom(t, h);

@@ -16,7 +16,7 @@ def rk3_solver(x_old, t, dt):
 def rk3_standard(x_old, t, dt):
     k1 = f(t) 
     k2 = f(t + dt/2) * (x_old + dt/2 * k1)
-    k3 = f(t + dt) * (x_old - dt * k1 + 2 * dt * k2)
+    k3 = f(t + dt) * (x_old + dt)
     return x_old + (dt/6) * (k1 + 4 * k2 + k3)
 
 # Third-order Adams-Bashforth Method

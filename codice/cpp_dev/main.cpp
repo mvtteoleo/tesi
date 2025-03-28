@@ -13,12 +13,6 @@ int main (int argc, char *argv[]) {
     // Iterate to see convergence
     std::cout << "N    |      EE err |     RK3 err"; 
 
-
-    // Control convergence
-    std::vector<double> conv1;
-    std::vector<double> conv2;
-
-
     for(double ii = 2; ii<5; ++ii){
         //      int N = 10*std::pow(3, ii); 
         //      Nx = N;
@@ -62,8 +56,6 @@ int main (int argc, char *argv[]) {
 
         double L2test1 = test1.computeL2Error(h, t);
         double L2test2 = test2.computeL2Error(h, t);
-        conv1.insert(conv1.begin(), L2test1);
-        conv2.insert(conv2.begin(), L2test2);
         std::cout << std::setprecision(3) << std::scientific 
             << "\n" << dt << 
             "\t"         << L2test1  <<  
