@@ -13,7 +13,7 @@ int main (int argc, char *argv[]) {
     // Iterate to see convergence
     std::cout << "N    |      EE err |     RK3 err"; 
 
-    for(double ii = 2; ii<5; ++ii){
+    for(double ii = 0; ii<3; ++ii){
         //      int N = 10*std::pow(3, ii); 
         //      Nx = N;
         //      Ny = N;
@@ -43,23 +43,27 @@ int main (int argc, char *argv[]) {
         test1.applyIC(t, h);
         Tensor2D<double> test2 = test1;
 
+        double L2test1 = 0;
+        double L2test2 = 0;
         // Solver
-        double Tfinal = 20;// 100*dt;
-        double dt = std::pow(2, -ii);// 2e-1
+        double dt = std::pow(10, -ii);// 2e-1
+        double Tfinal = 0.2;// 100*dt;
         while(t<Tfinal){
 
             test1.ExplEuler(dt, h, t);
 
-            test2.StandardRK3(dt, h, t);
+            test2.RK3(dt, h, t);
+
+            L2test1 += test1.computeL2Error(h, t);
+            L2test2 += test2.computeL2Error(h, t);
+
             t+=dt;
         };
 
-        double L2test1 = test1.computeL2Error(h, t);
-        double L2test2 = test2.computeL2Error(h, t);
         std::cout << std::setprecision(3) << std::scientific 
             << "\n" << dt << 
-            "\t"         << L2test1  <<  
-            "\t"         << L2test2  << "\n"; 
+            "\t"         << dt*L2test1  <<  
+            "\t"         << dt*L2test2  << "\n"; 
 
     }//end for
 
